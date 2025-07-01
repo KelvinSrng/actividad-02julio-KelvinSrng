@@ -53,15 +53,27 @@ class NumeroTelefonicoForm(ModelForm):
         model = NumeroTelefonico
         fields = ['telefono', 'tipo', 'estudiante']
 
+    def clean_telefono(self):
+        telefono = self.cleaned_data['telefono']
+        if not telefono.isdigit():
+            raise forms.ValidationError("El número debe contener solo dígitos.")
+        if len(telefono) != 10:
+            raise forms.ValidationError("El número telefónico debe tener exactamente 10 dígitos.")
+        return telefono
 
-class NumeroTelefonicoEstudianteForm(ModelForm):
+    def clean_tipo(self):
+        tipo = self.cleaned_data['tipo']
+        if not tipo:
+            raise forms.ValidationError("Debe ingresar un tipo.")
+        primera_letra = tipo[0].lower()
+        if primera_letra in "aeiou":
+            raise forms.ValidationError("El tipo debe comenzar con una consonante.")
+        return tipo
+
+class NumeroTelefonicoEstudianteForm(NumeroTelefonicoForm):
 
     def __init__(self, estudiante, *args, **kwargs):
-        super(NumeroTelefonicoEstudianteForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.initial['estudiante'] = estudiante
         self.fields["estudiante"].widget = forms.widgets.HiddenInput()
-        print(estudiante)
 
-    class Meta:
-        model = NumeroTelefonico
-        fields = ['telefono', 'tipo', 'estudiante']
