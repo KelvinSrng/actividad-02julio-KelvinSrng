@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Listado de Números Telefónicos</title>
+
+    <!-- CSS de DataTables -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
+
+    <!-- jQuery y DataTables -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+</head>
+<body>
+
+    {% extends "master.html" %}
+
+{% block content %}
+
+    <h1>Listado de Números Telefónicos</h1>
+    <p>Total: {{ total_numeros }}</p>
+
+    <table id="tablaTelefonos" class="display">
+        <thead>
+            <tr>
+                <th>Estudiante</th>
+                <th>Cédula</th>
+                <th>Número Telefónico</th>
+                <th>Tipo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for numero in numeros %}
+            <tr>
+                <td>{{ numero.estudiante.nombre }} {{ numero.estudiante.apellido }}</td>
+                <td>{{ numero.estudiante.cedula }}</td>
+                <td>{{ numero.numero }}</td>
+                <td>{{ numero.tipo }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        $(document).ready(function() {
+            $('#tablaTelefonos').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
