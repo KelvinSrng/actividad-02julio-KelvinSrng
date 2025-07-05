@@ -2,135 +2,148 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.template import RequestContext
 from django.shortcuts import render
+from django.db.models import Sum # Necesario para el cálculo de sumas directamente en la BD
 
 # importar las clases de models.py
-from administrativo.models import *
+from administrativo.models import Matricula, Estudiante, Modulo 
+# Importar los nuevos formularios
+from administrativo.forms import MatriculaForm, MatriculaEditForm, EstudianteForm, ModuloForm 
 
-# importar los formularios de forms.py
-from administrativo.forms import *
-
-# Create your views here.
+# vista que permita presesentar las matriculas
+# el nombre de la vista es index.
 
 def index(request):
     """
-        Listar los registros del modelo Estudiante,
-        obtenidos de la base de datos.
     """
-    # a través del ORM de django se obtiene
-    # los registros de la entidad; el listado obtenido
-    # se lo almacena en una variable llamada
-    # estudiantes
-    estudiantes = Estudiante.objects.all()
-    # en la variable tipo diccionario llamada informacion_template
-    # se agregará la información que estará disponible
-    # en el template
-    informacion_template = {'estudiantes': estudiantes, 'numero_estudiantes': len(estudiantes)}
+    matriculas = Matricula.objects.all()
+
+    titulo = "Listado de matrículas"
+    informacion_template = {'matriculas': matriculas,
+    'numero_matriculas': len(matriculas), 'mititulo': titulo}
     return render(request, 'index.html', informacion_template)
 
 
-def obtener_estudiante(request, id):
+def detalle_matricula(request, id):
     """
-        Listar los registros del modelo Estudiante,
-        obtenidos de la base de datos.
+
     """
-    # a través del ORM de django se obtiene
-    # los registros de la entidad; el listado obtenido
-    # se lo almacena en una variable llamada
-    # estudiantes
-    estudiante = Estudiante.objects.get(pk=id)
-    # en la variable tipo diccionario llamada informacion_template
-    # se agregará la información que estará disponible
-    # en el template
-    informacion_template = {'estudiante': estudiante}
-    return render(request, 'obtener_estudiante.html', informacion_template)
+
+    matricula = Matricula.objects.get(pk=id)
+    informacion_template = {'matricula': matricula}
+    return render(request, 'detalle_matricula.html', informacion_template)
 
 
-def crear_estudiante(request):
+def crear_matricula(request):
     """
     """
     if request.method=='POST':
-        formulario = EstudianteForm(request.POST)
+        formulario = MatriculaForm(request.POST)
         print(formulario.errors)
         if formulario.is_valid():
             formulario.save() # se guarda en la base de datos
             return redirect(index)
     else:
+        formulario = MatriculaForm()
+    diccionario = {'formulario': formulario, 'titulo_formulario': 'Crear Nueva Matrícula'} # Añadido título
+    return render(request, 'crear_matricula.html', diccionario)
+
+def editar_matricula(request, id):
+    """
+    """
+    matricula = Matricula.objects.get(pk=id)
+    print("----------matricula")
+    print(matricula)
+    print("----------matricula")
+    if request.method=='POST':
+        formulario = MatriculaEditForm(request.POST, instance=matricula)
+        print(formulario.errors)
+        if formulario.is_valid():
+            formulario.save()
+            return redirect(index)
+    else:
+        formulario = MatriculaEditForm(instance=matricula)
+    diccionario = {'formulario': formulario, 'titulo_formulario': 'Editar Matrícula'} # Añadido título
+    return render(request, 'crear_matricula.html', diccionario) # Se reutiliza el template de crear
+
+
+def detalle_estudiante(request, id):
+    """
+    """
+    estudiante = Estudiante.objects.get(pk=id)
+    informacion_template = {'e': estudiante}
+    return render(request, 'detalle_estudiante.html', informacion_template)
+
+
+# -----------------------------------------------------------------------------
+# NUEVAS VISTAS PARA MODULOS
+# -----------------------------------------------------------------------------
+
+def listar_modulos(request):
+    """
+    Vista que permite presentar el listado de módulos con su información.
+    Incluye el valor total de las matrículas asociadas a cada módulo.
+    """
+    # Usamos annotate con Sum para calcular el costo total directamente en la consulta a la BD
+    modulos = Modulo.objects.annotate(
+        valor_total_matriculas=Sum('lasmatriculas__costo')
+    )
+    
+    titulo = "Listado de Módulos"
+    informacion_template = {
+        'modulos': modulos, # Cambiamos el nombre de la variable para simplicidad en el template
+        'numero_modulos': len(modulos),
+        'mititulo': titulo
+    }
+    return render(request, 'listar_modulos.html', informacion_template)
+
+
+def crear_modulo(request):
+    """
+    Vista para crear un nuevo módulo.
+    """
+    if request.method == 'POST':
+        formulario = ModuloForm(request.POST)
+        if formulario.is_valid():
+            formulario.save()
+            return redirect('listar_modulos') # Redirigir a la lista de módulos por su nombre
+    else:
+        formulario = ModuloForm()
+    
+    diccionario = {'formulario': formulario, 'titulo_formulario': 'Crear Nuevo Módulo'}
+    return render(request, 'crear_modulo.html', diccionario)
+
+
+
+def listar_estudiantes(request):
+    """
+    Vista que permite presentar el listado de estudiantes con su información detallada.
+    Incluye el costo total de matrículas de cada estudiante.
+    """
+    # Usamos annotate con Sum para calcular el costo total directamente en la consulta a la BD
+    estudiantes = Estudiante.objects.annotate(
+        costo_total_matriculas=Sum('lasmatriculas__costo')
+    )
+    
+    titulo = "Listado de Estudiantes"
+    informacion_template = {
+        'estudiantes': estudiantes, # Cambiamos el nombre de la variable para simplicidad en el template
+        'numero_estudiantes': len(estudiantes),
+        'mititulo': titulo
+    }
+    return render(request, 'listar_estudiantes.html', informacion_template)
+
+
+def crear_estudiante(request):
+    """
+    Vista para crear un nuevo estudiante.
+    """
+    if request.method == 'POST':
+        formulario = EstudianteForm(request.POST)
+        if formulario.is_valid():
+            formulario.save()
+            return redirect('listar_estudiantes') # Redirigir a la lista de estudiantes por su nombre
+    else:
         formulario = EstudianteForm()
-    diccionario = {'formulario': formulario}
-
-    return render(request, 'crearEstudiante.html', diccionario)
-
-
-def editar_estudiante(request, id):
-    """
-    """
-    estudiante = Estudiante.objects.get(pk=id)
-    if request.method=='POST':
-        formulario = EstudianteForm(request.POST, instance=estudiante)
-        print(formulario.errors)
-        if formulario.is_valid():
-            formulario.save()
-            return redirect(index)
-    else:
-        formulario = EstudianteForm(instance=estudiante)
-    diccionario = {'formulario': formulario}
-
-    return render(request, 'editarEstudiante.html', diccionario)
-
-
-def eliminar_estudiante(request, id):
-    """
-    """
-    estudiante = Estudiante.objects.get(pk=id)
-    estudiante.delete()
-    return redirect(index)
-
-
-def crear_numero_telefonico(request):
-    """
-    """
-
-    if request.method=='POST':
-        formulario = NumeroTelefonicoForm(request.POST)
-        print(formulario.errors)
-        if formulario.is_valid():
-            formulario.save()
-            return redirect(index)
-    else:
-        formulario = NumeroTelefonicoForm()
-    diccionario = {'formulario': formulario}
-
-    return render(request, 'crearNumeroTelefonico.html', diccionario)
-
-
-def editar_numero_telefonico(request, id):
-    """
-    """
-    telefono = NumeroTelefonico.objects.get(pk=id)
-    if request.method=='POST':
-        formulario = NumeroTelefonicoForm(request.POST, instance=telefono)
-        print(formulario.errors)
-        if formulario.is_valid():
-            formulario.save()
-            return redirect(index)
-    else:
-        formulario = NumeroTelefonicoForm(instance=telefono)
-    diccionario = {'formulario': formulario}
-
-    return render(request, 'crearNumeroTelefonico.html', diccionario)
-
-def crear_numero_telefonico_estudiante(request, id):
-    """
-    """
-    estudiante = Estudiante.objects.get(pk=id)
-    if request.method=='POST':
-        formulario = NumeroTelefonicoEstudianteForm(estudiante, request.POST)
-        print(formulario.errors)
-        if formulario.is_valid():
-            formulario.save()
-            return redirect(index)
-    else:
-        formulario = NumeroTelefonicoEstudianteForm(estudiante)
-    diccionario = {'formulario': formulario, 'estudiante': estudiante}
-
-    return render(request, 'crearNumeroTelefonicoEstudiante.html', diccionario)
+    
+    diccionario = {'formulario': formulario, 'titulo_formulario': 'Crear Nuevo Estudiante'}
+    return render(request, 'crear_estudiante.html', diccionario)

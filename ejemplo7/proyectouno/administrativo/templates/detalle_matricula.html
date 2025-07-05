@@ -1,0 +1,19 @@
+{% extends "master.html" %}
+
+{% block title %}
+  Detalle Matrícula
+{% endblock %}
+
+{% block content %}
+
+<h3>Detalle de Matricula</h3>
+
+<h5 class="mt-4 mb-2">Nombre:</h5> <p>{{matricula.estudiante}}</p>
+</br>
+<h5 class="mt-4 mb-2">Módulo:</h5> <p>{{matricula.modulo}}</p>
+
+</br>
+<div class="col-lg-4 col-12">
+  <a class="btn custom-btn custom-border-btn ms-3" href="{% url 'index' %}">Inicio</a>
+</div>
+{% endblock %}

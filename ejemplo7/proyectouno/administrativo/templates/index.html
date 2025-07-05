@@ -1,0 +1,53 @@
+{% extends "master.html" %}
+
+{% block title %}
+    Listado de Estudiantes
+{% endblock %}
+
+{% block content %}
+    <h1>{{ mititulo }}</h1>
+    <hr>
+    <h3>Número de Matriculas {{ numero_matriculas }}</h3>
+    <div class="col-lg-4 col-md-6 col-12 mb-3">
+        <a class="btn custom-btn custom-border-btn" href="{% url 'crear_matricula' %}">Nueva Matrícula</a>
+    </div>
+    <hr>
+    <table id="tabla_datos" class="cell-border">
+        <thead>
+        <tr>
+            <th><b>Estudiante</b></th>
+            <th><b>Módulo</b></th>
+            <th><b>Comentario</b></th>
+            <th><b>Opciones</b></th>
+        </tr>
+        </thead>
+        {% for e in matriculas %}
+            <tr>
+                <td>
+                    {{ e.estudiante.nombre }} <br>
+                    {{ e.estudiante.get_tipo_estudiante_display }}
+                    <a class="bi-person-fill" href="{% url 'detalle_estudiante' e.estudiante.id %}"></a>
+                </td>
+                <td>
+                    {{ e.modulo.nombre }}
+                </td>
+                <td>
+                    {{ e.comentario }}
+                </td>
+                <td>
+      <span>
+        <a class="bi-eye-fill" href="{% url 'detalle_matricula' e.id %}" title="ver"></a>
+        <a class="bi-pencil-square" href="{% url 'editar_matricula' e.id %}" title="editar"></a>
+      </span>
+                </td>
+            </tr>
+        {% endfor %}
+
+    </table>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#tabla_datos').DataTable();
+        });
+    </script>
+{% endblock %}

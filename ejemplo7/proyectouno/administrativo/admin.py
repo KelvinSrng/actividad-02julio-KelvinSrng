@@ -1,11 +1,7 @@
 from django.contrib import admin
 
 # Importar las clases del modelo
-from administrativo.models import Estudiante, NumeroTelefonico, Modulo, Matricula
-
-# Agregar la clase Estudiante para administrar desde
-# interfaz de administración
-# admin.site.register(Estudiante)
+from administrativo.models import Estudiante, Modulo, Matricula
 
 # Se crea una clase que hereda
 # de ModelAdmin para el modelo
@@ -24,13 +20,8 @@ class EstudianteAdmin(admin.ModelAdmin):
 admin.site.register(Estudiante, EstudianteAdmin)
 
 admin.site.register(Modulo)
-# Agregar la clase NumeroTelefonico para administrar desde
-# interfaz de administración
-# admin.site.register(NumeroTelefonico)
 
-# Se crea una clase que hereda
-# de ModelAdmin para el modelo
-# NumeroTelefonico
+# admin.site.register(Matricula)
 class MatriculaAdmin(admin.ModelAdmin):
     # listado de atributos que se mostrará
     # por cada registro
@@ -40,4 +31,3 @@ class MatriculaAdmin(admin.ModelAdmin):
     search_fields = ('estudiante__nombre', 'modulo__nombre')
 
 admin.site.register(Matricula, MatriculaAdmin)
-
